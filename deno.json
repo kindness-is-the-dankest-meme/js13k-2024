@@ -1,0 +1,10 @@
+{
+  "tasks": {
+    "dev": "deno run --allow-env --allow-net --allow-read --watch src/server.ts"
+  },
+  "imports": {},
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": ["dom", "dom.iterable", "dom.asynciterable", "deno.ns"]
+  }
+}
