@@ -45,7 +45,7 @@ Deno.serve(async ({ url: href }: Request) => {
   const path = url(
     format({
       base: `${name}${ext}`,
-      dir: ".",
+      dir: "../src",
       ext,
       name,
       root: "/",
