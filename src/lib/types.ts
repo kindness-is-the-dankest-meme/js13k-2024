@@ -1,4 +1,3 @@
-export interface Listener<T extends keyof DocumentEventMap>
-  extends EventListener {
+export interface Listener<T extends keyof DocumentEventMap> {
   (event: DocumentEventMap[T]): void;
 }
