@@ -26,9 +26,13 @@ const ctx = c.getContext("2d")!;
 const draw = () => {
   raf(draw);
 
+  ctx.fillStyle = "hsl(100, 40%, 60%)";
+  ctx.fillRect(0, 0, w, h);
+
   ctx.font = "bold 8rem sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
+  ctx.fillStyle = "hsla(50, 10%, 90%, 0.1)";
   ctx.fillText("hello", hw, hh);
 };
 
