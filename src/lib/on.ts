@@ -5,4 +5,4 @@ export const on = <T extends EventTarget, E extends keyof DocumentEventMap>(
   e: E,
   l: Listener<E>,
   o: boolean | AddEventListenerOptions = false
-) => t.addEventListener(e, l, o);
+) => t.addEventListener(e, l as EventListener, o);
