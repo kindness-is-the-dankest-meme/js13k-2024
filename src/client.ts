@@ -63,6 +63,26 @@ on(win, "keyup", onKeyUp);
 
 const ctx = c.getContext("2d")!;
 
+const boat = (() => {
+  const a = 155;
+  const h = 200;
+  const o = sqrt(h * h - a * a);
+
+  const i = atan2(-o, a);
+  const j = atan2(o, a);
+  const k = j - j / 3;
+
+  const p = new Path2D();
+
+  p.ellipse(0, 0, 30, 40, 0, 0, ππ);
+  p.moveTo(a + cos(i + j / 3 + π) * h, sin(k) * h);
+  p.arc(a, 0, h, i + j / 3 + π, j + π);
+  p.arc(-a, 0, h, i, k);
+  p.closePath();
+
+  return p;
+})();
+
 const draw = () => {
   raf(draw);
 
@@ -75,30 +95,11 @@ const draw = () => {
   // ctx.fillStyle = "hsla(50, 10%, 90%, 0.1)";
   // ctx.fillText("hello", hw, hh);
 
-  const adj = 155;
-  const hyp = 200;
-
-  const a1x = adj;
-  const a2x = -adj;
-
-  const opp = sqrt(hyp * hyp - adj * adj);
-
-  const a = atan2(-opp, adj);
-  const b = atan2(opp, adj);
-  const c = b - b / 3;
-
-  const p = new Path2D();
-  p.ellipse(0, 0, 30, 40, 0, 0, ππ);
-  p.moveTo(a1x + cos(a + b / 3 + π) * hyp, sin(c) * hyp);
-  p.arc(a1x, 0, hyp, a + b / 3 + π, b + π);
-  p.arc(a2x, 0, hyp, a, c);
-  p.closePath();
-
   ctx.fillStyle = "hsla(50, 10%, 90%, 0.6)";
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate(r);
-  ctx.fill(p, "evenodd");
+  ctx.fill(boat, "evenodd");
   ctx.restore();
 };
 
