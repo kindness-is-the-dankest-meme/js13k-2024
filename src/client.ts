@@ -94,7 +94,28 @@ const boat = (() => {
   return p;
 })();
 
-const draw = () => {
+const oar = (() => {
+  const p = new Path2D();
+
+  p.rect(-20, -2, 60, 4);
+  p.ellipse(60, 0, 20, 10, 0, 0, ππ);
+  p.closePath();
+
+  return p;
+})();
+
+const dot = (px: number, py: number, r = 2) => {
+  ctx.save();
+
+  ctx.fillStyle = "red";
+  ctx.beginPath();
+  ctx.arc(px, py, r, 0, ππ);
+  ctx.fill();
+
+  ctx.restore();
+};
+
+const draw = (t: DOMHighResTimeStamp) => {
   raf(draw);
 
   ctx.fillStyle = "hsl(100, 40%, 60%)";
@@ -111,6 +132,19 @@ const draw = () => {
   ctx.translate(x, y);
   ctx.rotate(r);
   ctx.fill(boat, "evenodd");
+
+  ctx.save();
+  ctx.translate(37.5, -10);
+  ctx.rotate(sin(t / 400));
+  ctx.fill(oar);
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(-37.5, -10);
+  ctx.rotate(-sin(t / 400) + π);
+  ctx.fill(oar);
+  ctx.restore();
+
   ctx.restore();
 };
 
