@@ -64,10 +64,21 @@ on(win, "keyup", onKeyUp);
 const ctx = c.getContext("2d")!;
 
 const boat = (() => {
+  /**
+   * a = adjacent
+   * h = hypotenuse
+   * o = opposite
+   */
   const a = 155;
   const h = 200;
   const o = sqrt(h * h - a * a);
 
+  /**
+   * i = angle to upper point of intersection
+   * j = angle to lower point of intersection
+   * k = angle 2/3rds to the lower point
+   *     (the back of the boat is flat)
+   */
   const i = atan2(-o, a);
   const j = atan2(o, a);
   const k = j - j / 3;
