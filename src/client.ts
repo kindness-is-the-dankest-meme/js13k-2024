@@ -104,17 +104,6 @@ const oar = (() => {
   return p;
 })();
 
-const dot = (px: number, py: number, r = 2) => {
-  ctx.save();
-
-  ctx.fillStyle = "red";
-  ctx.beginPath();
-  ctx.arc(px, py, r, 0, ππ);
-  ctx.fill();
-
-  ctx.restore();
-};
-
 const draw = (t: DOMHighResTimeStamp) => {
   raf(draw);
 
