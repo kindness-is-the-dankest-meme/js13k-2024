@@ -1,12 +1,12 @@
+import { boat } from "./lib/boat.ts";
 import { on } from "./lib/on.ts";
+import { cos, sin, π, ππ, hπ } from "./lib/maths.ts";
 
 declare const m: HTMLElementTagNameMap["main"];
 declare const c: HTMLElementTagNameMap["canvas"];
 
 const win = window;
 const { devicePixelRatio: dpr, requestAnimationFrame: raf } = win;
-const { atan2, cos, PI: π, sin, sqrt } = Math;
-const ππ = π * 2;
 
 const scale = 1 / dpr,
   forward = 30,
@@ -17,12 +17,15 @@ let w: number,
   hh: number,
   x: number,
   y: number,
-  r = 0;
+  r = 0,
+  px: number,
+  py: number,
+  pr = 0;
 
 const onResize = () => {
   ({ innerWidth: hw, innerHeight: hh } = win);
-  x ??= hw;
-  y ??= hh;
+  x = px ??= hw;
+  y = py ??= hh;
   w = hw * dpr;
   h = hh * dpr;
 
@@ -37,8 +40,8 @@ win.dispatchEvent(new Event("resize"));
 const onKeyUp = ({ key }: KeyboardEvent) => {
   switch (key) {
     case "ArrowUp": {
-      x -= cos(r + π / 2) * forward;
-      y -= sin(r + π / 2) * forward;
+      x -= cos(r + hπ) * forward;
+      y -= sin(r + hπ) * forward;
       break;
     }
     case "ArrowRight": {
@@ -47,8 +50,8 @@ const onKeyUp = ({ key }: KeyboardEvent) => {
       break;
     }
     case "ArrowDown": {
-      x -= cos(r + π / 2) * reverse;
-      y -= sin(r + π / 2) * reverse;
+      x -= cos(r + hπ) * reverse;
+      y -= sin(r + hπ) * reverse;
       break;
     }
     case "ArrowLeft": {
@@ -63,47 +66,6 @@ on(win, "keyup", onKeyUp);
 
 const ctx = c.getContext("2d")!;
 
-const boat = (() => {
-  /**
-   * a = adjacent
-   * h = hypotenuse
-   * o = opposite
-   */
-  const a = 155;
-  const h = 200;
-  const o = sqrt(h * h - a * a);
-
-  /**
-   * i = angle to upper point of intersection
-   * j = angle to lower point of intersection
-   * k = angle 2/3rds to the lower point
-   *     (the back of the boat is flat)
-   */
-  const i = atan2(-o, a);
-  const j = atan2(o, a);
-  const k = j - j / 3;
-
-  const p = new Path2D();
-
-  p.ellipse(0, 0, 30, 40, 0, 0, ππ);
-  p.moveTo(a + cos(i + j / 3 + π) * h, sin(k) * h);
-  p.arc(a, 0, h, i + j / 3 + π, j + π);
-  p.arc(-a, 0, h, i, k);
-  p.closePath();
-
-  return p;
-})();
-
-const oar = (() => {
-  const p = new Path2D();
-
-  p.rect(-20, -2, 60, 4);
-  p.ellipse(60, 0, 20, 10, 0, 0, ππ);
-  p.closePath();
-
-  return p;
-})();
-
 const draw = (t: DOMHighResTimeStamp) => {
   raf(draw);
 
@@ -116,25 +78,7 @@ const draw = (t: DOMHighResTimeStamp) => {
   // ctx.fillStyle = "hsla(50, 10%, 90%, 0.1)";
   // ctx.fillText("hello", hw, hh);
 
-  ctx.fillStyle = "hsla(50, 10%, 90%, 0.6)";
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(r);
-  ctx.fill(boat, "evenodd");
-
-  ctx.save();
-  ctx.translate(37.5, -10);
-  ctx.rotate(sin(t / 400));
-  ctx.fill(oar);
-  ctx.restore();
-
-  ctx.save();
-  ctx.translate(-37.5, -10);
-  ctx.rotate(-sin(t / 400) + π);
-  ctx.fill(oar);
-  ctx.restore();
-
-  ctx.restore();
+  boat(ctx, t, x, y, r);
 };
 
 raf(draw);
