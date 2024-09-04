@@ -5,12 +5,12 @@ import { cos, sin, π, ππ, hπ } from "./lib/maths.ts";
 declare const m: HTMLElementTagNameMap["main"];
 declare const c: HTMLElementTagNameMap["canvas"];
 
-const win = window;
-const { devicePixelRatio: dpr, requestAnimationFrame: raf } = win;
-
-const scale = 1 / dpr,
+const win = window,
+  { devicePixelRatio: dpr, requestAnimationFrame: raf } = win,
+  scale = 1 / dpr,
   forward = 30,
   reverse = -10;
+
 let w: number,
   h: number,
   hw: number,
@@ -66,9 +66,9 @@ on(win, "keyup", onKeyUp);
 
 const ctx = c.getContext("2d")!;
 
-const draw = (t: DOMHighResTimeStamp) => {
-  raf(draw);
+const step = (_t: number) => {};
 
+const draw = (t: number) => {
   ctx.fillStyle = "hsl(100, 40%, 60%)";
   ctx.fillRect(0, 0, w, h);
 
@@ -81,4 +81,31 @@ const draw = (t: DOMHighResTimeStamp) => {
   boat(ctx, t, x, y, r);
 };
 
-raf(draw);
+const loop = (() => {
+  const dt = 10;
+
+  let t = 0,
+    pt: DOMHighResTimeStamp = performance.now(),
+    ot = 0,
+    ft: number;
+
+  return (time: DOMHighResTimeStamp) => {
+    raf(loop);
+
+    ft = time - pt;
+    pt = time;
+    ot += ft;
+
+    while (ot >= dt) {
+      // prevState = clone(state)
+      step(/* state, */ t /* , dt */);
+      ot -= dt;
+      t += dt;
+    }
+
+    // perc = ot / dt
+    draw(/* state * perc + prevState * (1 - perc),  */ t);
+  };
+})();
+
+raf(loop);
