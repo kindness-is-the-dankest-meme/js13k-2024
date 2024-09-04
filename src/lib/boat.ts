@@ -41,6 +41,8 @@ const oar = (() => {
   return p;
 })();
 
+const swing = 19 / 8;
+
 export const boat = (
   ctx: CanvasRenderingContext2D,
   t: number,
@@ -54,7 +56,7 @@ export const boat = (
   ctx.rotate(r);
   ctx.fill(hull, "evenodd");
 
-  const a = sin(t / 400) * (π / 4) + π / 10;
+  const a = sin(t / 400) * (π / swing);
 
   ctx.save();
   ctx.translate(32, 0);
