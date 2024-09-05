@@ -3,5 +3,5 @@ export const win = window,
     devicePixelRatio: dpr,
     requestAnimationFrame: raf,
     structuredClone: dup,
-    Object: { is },
+    Object: { entries, fromEntries, is },
   } = win;

@@ -1,7 +1,7 @@
 import { boat } from "./lib/boat.ts";
 import { on } from "./lib/on.ts";
 import { cos, sin, π, ππ, hπ } from "./lib/maths.ts";
-import { win, dpr, raf } from "./lib/platform.ts";
+import { win, dpr, raf, fromEntries, entries } from "./lib/platform.ts";
 import { get, set, type State } from "./lib/state.ts";
 
 declare const m: HTMLElementTagNameMap["main"];
@@ -69,9 +69,11 @@ on(win, "keyup", onKeyUp);
 
 const ctx = c.getContext("2d")!;
 
-const step = ({ t: _ }: State /* , dt: number */) => {};
+const step = ({ t }: State, dt: number): void => {
+  set({ t: t + dt });
+};
 
-const draw = ({ t, x, y, r, w, h }: State) => {
+const draw = ({ t, x, y, r, w, h }: State): void => {
   ctx.fillStyle = "hsl(100, 40%, 60%)";
   ctx.fillRect(0, 0, w, h);
 
@@ -83,6 +85,15 @@ const draw = ({ t, x, y, r, w, h }: State) => {
 
   boat(ctx, t, x, y, r);
 };
+
+const lerp = <T extends Record<PropertyKey, number>>(
+  a: T,
+  b: T,
+  t: number
+): T =>
+  fromEntries(
+    entries(a).map(([k, v]) => [k, v * (1 - t) + b[k as keyof T] * t])
+  ) as T;
 
 const loop = (() => {
   const dt = 10;
@@ -98,15 +109,14 @@ const loop = (() => {
     pt = time;
     ot += ft;
 
+    let state = get();
     while (ot >= dt) {
-      const state = get();
-      step(/* state, */ state /* , dt */);
+      state = get();
+      step(state, dt);
       ot -= dt;
-      set(({ t }) => ({ t: t + dt }));
     }
 
-    // perc = ot / dt
-    draw(/* state * perc + prevState * (1 - perc),  */ get());
+    draw(lerp(state, get(), ot / dt));
   };
 })();
 
