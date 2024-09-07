@@ -1,15 +1,26 @@
 import { is } from "./platform.ts";
 
+export type Force = {
+  x?: number;
+  y?: number;
+  r?: number;
+};
+
 export type State = {
+  // time (ms)
   t: number;
+  // current position / rotation
   x: number;
   y: number;
   r: number;
+  // previous position / rotation
   px: number;
   py: number;
   pr: number;
+  // canvas size
   w: number;
   h: number;
+  // window size
   hw: number;
   hh: number;
 };
