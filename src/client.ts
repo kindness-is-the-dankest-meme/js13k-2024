@@ -72,34 +72,32 @@ const onKeyDown = ({ key }: KeyboardEvent) => {
 
 on(win, "keydown", onKeyDown);
 
-const step = (_: State, dt: number): void => {
-  set(({ t, x, y, r, px, py, pr }) => {
-    let vx = (x - px) * f,
-      vy = (y - py) * f,
-      vr = ((r - pr) % ππ) * f;
+const step = ({ t, x, y, r, px, py, pr }: State, dt: number): void => {
+  let vx = (x - px) * f,
+    vy = (y - py) * f,
+    vr = ((r - pr) % ππ) * f;
 
-    forces.forEach(({ x, y, r }) => {
-      console.log(vr, r);
-      vx += x ?? 0;
-      vy += y ?? 0;
-      vr += r ?? 0;
-    });
-    forces.length = 0;
+  forces.forEach(({ x, y, r }) => {
+    console.log(vr, r);
+    vx += x ?? 0;
+    vy += y ?? 0;
+    vr += r ?? 0;
+  });
+  forces.length = 0;
 
-    const h = hypot(vx, vy),
-      nr = r + vr,
-      nx = x - cos(nr + hπ) * h,
-      ny = y - sin(nr + hπ) * h;
+  const h = hypot(vx, vy),
+    nr = r + vr,
+    nx = x - cos(nr + hπ) * h,
+    ny = y - sin(nr + hπ) * h;
 
-    return {
-      t: t + dt,
-      x: nx,
-      y: ny,
-      r: nr,
-      px: x,
-      py: y,
-      pr: r,
-    };
+  set({
+    t: t + dt,
+    x: nx,
+    y: ny,
+    r: nr,
+    px: x,
+    py: y,
+    pr: r,
   });
 };
 
