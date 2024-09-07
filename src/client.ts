@@ -1,36 +1,33 @@
 import { boat } from "./lib/boat.ts";
 import { on } from "./lib/on.ts";
 import { cos, sin, π, ππ, hπ } from "./lib/maths.ts";
+import { win, dpr, raf, fromEntries, entries } from "./lib/platform.ts";
+import { get, set, type State } from "./lib/state.ts";
 
 declare const m: HTMLElementTagNameMap["main"];
 declare const c: HTMLElementTagNameMap["canvas"];
 
-const win = window,
-  { devicePixelRatio: dpr, requestAnimationFrame: raf } = win,
-  scale = 1 / dpr,
+const scale = 1 / dpr,
   forward = 30,
   reverse = -10;
 
-let w: number,
-  h: number,
-  hw: number,
-  hh: number,
-  x: number,
-  y: number,
-  r = 0,
-  px: number,
-  py: number,
-  pr = 0;
-
 const onResize = () => {
-  ({ innerWidth: hw, innerHeight: hh } = win);
-  x = px ??= hw;
-  y = py ??= hh;
-  w = hw * dpr;
-  h = hh * dpr;
+  const { innerWidth: hw, innerHeight: hh } = win;
 
-  c.width = w;
-  c.height = h;
+  set(({ x, y, px, py }) => ({
+    w: hw * dpr,
+    h: hh * dpr,
+    hw,
+    hh,
+
+    x: x || hw,
+    y: y || hh,
+    px: px || hw,
+    py: py || hh,
+  }));
+
+  c.width = hw * dpr;
+  c.height = hh * dpr;
   c.style.transform = `scale(${scale})`;
 };
 
@@ -40,23 +37,29 @@ win.dispatchEvent(new Event("resize"));
 const onKeyUp = ({ key }: KeyboardEvent) => {
   switch (key) {
     case "ArrowUp": {
-      x -= cos(r + hπ) * forward;
-      y -= sin(r + hπ) * forward;
+      set(({ x, y, r }) => ({
+        x: x! - cos(r + hπ) * forward,
+        y: y! - sin(r + hπ) * forward,
+      }));
       break;
     }
     case "ArrowRight": {
-      r += π / 20;
-      r %= ππ;
+      set(({ r }) => ({
+        r: (r + π / 20) % ππ,
+      }));
       break;
     }
     case "ArrowDown": {
-      x -= cos(r + hπ) * reverse;
-      y -= sin(r + hπ) * reverse;
+      set(({ x, y, r }) => ({
+        x: x! - cos(r + hπ) * reverse,
+        y: y! - sin(r + hπ) * reverse,
+      }));
       break;
     }
     case "ArrowLeft": {
-      r -= π / 20;
-      r %= ππ;
+      set(({ r }) => ({
+        r: (r - π / 20) % ππ,
+      }));
       break;
     }
   }
@@ -66,9 +69,11 @@ on(win, "keyup", onKeyUp);
 
 const ctx = c.getContext("2d")!;
 
-const step = (_t: number) => {};
+const step = ({ t }: State, dt: number): void => {
+  set({ t: t + dt });
+};
 
-const draw = (t: number) => {
+const draw = ({ t, x, y, r, w, h }: State): void => {
   ctx.fillStyle = "hsl(100, 40%, 60%)";
   ctx.fillRect(0, 0, w, h);
 
@@ -81,11 +86,19 @@ const draw = (t: number) => {
   boat(ctx, t, x, y, r);
 };
 
+const lerp = <T extends Record<PropertyKey, number>>(
+  a: T,
+  b: T,
+  t: number
+): T =>
+  fromEntries(
+    entries(a).map(([k, v]) => [k, v * (1 - t) + b[k as keyof T] * t])
+  ) as T;
+
 const loop = (() => {
   const dt = 10;
 
-  let t = 0,
-    pt: DOMHighResTimeStamp = performance.now(),
+  let pt: DOMHighResTimeStamp = performance.now(),
     ot = 0,
     ft: number;
 
@@ -96,15 +109,14 @@ const loop = (() => {
     pt = time;
     ot += ft;
 
+    let state = get();
     while (ot >= dt) {
-      // prevState = clone(state)
-      step(/* state, */ t /* , dt */);
+      state = get();
+      step(state, dt);
       ot -= dt;
-      t += dt;
     }
 
-    // perc = ot / dt
-    draw(/* state * perc + prevState * (1 - perc),  */ t);
+    draw(lerp(state, get(), ot / dt));
   };
 })();
 
