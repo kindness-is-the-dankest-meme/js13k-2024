@@ -1,5 +1,5 @@
 import { boat } from "./lib/boat.ts";
-import { cos, hypot, hπ, sin, sign, π, ππ } from "./lib/maths.ts";
+import { cos, hypot, hπ, sin, π, ππ } from "./lib/maths.ts";
 import { on } from "./lib/on.ts";
 import { dpr, entries, fromEntries, raf, win } from "./lib/platform.ts";
 import { Force, get, set, type State } from "./lib/state.ts";
