@@ -1,11 +1,5 @@
 import { is } from "./platform.ts";
 
-export type Force = {
-  x?: number;
-  y?: number;
-  r?: number;
-};
-
 export type State = {
   // time (ms)
   t: number;

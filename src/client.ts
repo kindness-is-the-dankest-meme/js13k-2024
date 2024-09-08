@@ -1,93 +1,66 @@
 import { boat } from "./lib/boat.ts";
+import { kd } from "./lib/input.ts";
 import { cos, hypot, hπ, sin, π, ππ } from "./lib/maths.ts";
-import { on } from "./lib/on.ts";
-import { dpr, entries, fromEntries, raf, win } from "./lib/platform.ts";
-import { Force, get, set, type State } from "./lib/state.ts";
+import { entries, fromEntries, raf } from "./lib/platform.ts";
+import { resize } from "./lib/resize.ts";
+import { get, set, type State } from "./lib/state.ts";
 
 declare const m: HTMLElementTagNameMap["main"];
 declare const c: HTMLElementTagNameMap["canvas"];
+declare const p: HTMLElementTagNameMap["pre"];
 
-const scale = 1 / dpr,
-  forward = 2,
-  reverse = -2;
+resize(c);
 
-const onResize = () => {
-  const { innerWidth: hw, innerHeight: hh } = win;
+const f = 0.95;
+let d = 1;
 
-  set(({ x, y, px, py }) => ({
-    w: hw * dpr,
-    h: hh * dpr,
-    hw,
-    hh,
+const step = (state: State, dt: number): void => {
+  p.innerText = entries(state)
+    .map(([k, v]) => `${k}: ${v}`)
+    .join("\n");
 
-    x: x || hw,
-    y: y || hh,
-    px: px || hw,
-    py: py || hh,
-  }));
+  const { t, x, y, r, px, py, pr } = state;
 
-  c.width = hw * dpr;
-  c.height = hh * dpr;
-  c.style.transform = `scale(${scale})`;
-};
-
-on(win, "resize", onResize);
-win.dispatchEvent(new Event("resize"));
-
-const f = 0.99;
-const forces: Force[] = [];
-
-const onKeyDown = ({ key }: KeyboardEvent) => {
-  const { r } = get();
-
-  switch (key) {
-    case "ArrowUp": {
-      forces.push({
-        x: -cos(r + hπ) * forward,
-        y: -sin(r + hπ) * forward,
-      });
-      break;
-    }
-    case "ArrowRight": {
-      forces.push({
-        r: π / 720,
-      });
-      break;
-    }
-    case "ArrowDown": {
-      forces.push({
-        x: -cos(r + hπ) * reverse,
-        y: -sin(r + hπ) * reverse,
-      });
-      break;
-    }
-    case "ArrowLeft": {
-      forces.push({
-        r: -π / 720,
-      });
-      break;
-    }
-  }
-};
-
-on(win, "keydown", onKeyDown);
-
-const step = ({ t, x, y, r, px, py, pr }: State, dt: number): void => {
   let vx = (x - px) * f,
     vy = (y - py) * f,
     vr = ((r - pr) % ππ) * f;
 
-  forces.forEach(({ x, y, r }) => {
-    vx += x ?? 0;
-    vy += y ?? 0;
-    vr += r ?? 0;
-  });
-  forces.length = 0;
+  if (kd.has("ArrowUp")) {
+    vx += cos(r - hπ) / 3;
+    vy += sin(r - hπ) / 3;
+    d = -1;
+  }
+
+  if (kd.has("ArrowRight")) {
+    vr += π / 1440;
+  }
+
+  if (kd.has("ArrowDown")) {
+    vx += cos(r + hπ) / 6;
+    vy += sin(r + hπ) / 6;
+    d = 1;
+  }
+
+  if (kd.has("ArrowLeft")) {
+    vr += -π / 1440;
+  }
 
   const h = hypot(vx, vy),
     nr = r + vr,
-    nx = x - cos(nr + hπ) * h,
-    ny = y - sin(nr + hπ) * h;
+    nx = x + cos(nr + hπ * d) * h,
+    ny = y + sin(nr + hπ * d) * h;
+
+  p.innerText += [
+    "\n",
+    `vr: ${vr}`,
+    `vx: ${vx}`,
+    `vy: ${vy}`,
+    "\n",
+    `h: ${h}`,
+    `nr: ${nr}`,
+    `nx: ${nx}`,
+    `ny: ${ny}`,
+  ].join("\n");
 
   set({
     t: t + dt,
