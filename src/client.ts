@@ -50,7 +50,7 @@ const onKeyDown = ({ key }: KeyboardEvent) => {
     }
     case "ArrowRight": {
       forces.push({
-        r: (π / 720) % ππ,
+        r: π / 720,
       });
       break;
     }
@@ -63,7 +63,7 @@ const onKeyDown = ({ key }: KeyboardEvent) => {
     }
     case "ArrowLeft": {
       forces.push({
-        r: (-π / 720) % ππ,
+        r: -π / 720,
       });
       break;
     }
@@ -78,7 +78,6 @@ const step = ({ t, x, y, r, px, py, pr }: State, dt: number): void => {
     vr = ((r - pr) % ππ) * f;
 
   forces.forEach(({ x, y, r }) => {
-    console.log(vr, r);
     vx += x ?? 0;
     vy += y ?? 0;
     vr += r ?? 0;
