@@ -1,4 +1,6 @@
-import type { Listener } from "./types.ts";
+interface Listener<T extends keyof DocumentEventMap> {
+  (event: DocumentEventMap[T]): void;
+}
 
 export const on = <T extends EventTarget, E extends keyof DocumentEventMap>(
   t: T,

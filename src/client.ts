@@ -1,15 +1,15 @@
 import { boat } from "./lib/boat.ts";
+import { cos, hypot, hπ, sin, sign, π, ππ } from "./lib/maths.ts";
 import { on } from "./lib/on.ts";
-import { cos, sin, π, ππ, hπ } from "./lib/maths.ts";
-import { win, dpr, raf, fromEntries, entries } from "./lib/platform.ts";
-import { get, set, type State } from "./lib/state.ts";
+import { dpr, entries, fromEntries, raf, win } from "./lib/platform.ts";
+import { Force, get, set, type State } from "./lib/state.ts";
 
 declare const m: HTMLElementTagNameMap["main"];
 declare const c: HTMLElementTagNameMap["canvas"];
 
 const scale = 1 / dpr,
-  forward = 30,
-  reverse = -10;
+  forward = 2,
+  reverse = -2;
 
 const onResize = () => {
   const { innerWidth: hw, innerHeight: hh } = win;
@@ -34,44 +34,73 @@ const onResize = () => {
 on(win, "resize", onResize);
 win.dispatchEvent(new Event("resize"));
 
-const onKeyUp = ({ key }: KeyboardEvent) => {
+const f = 0.99;
+const forces: Force[] = [];
+
+const onKeyDown = ({ key }: KeyboardEvent) => {
+  const { r } = get();
+
   switch (key) {
     case "ArrowUp": {
-      set(({ x, y, r }) => ({
-        x: x! - cos(r + hπ) * forward,
-        y: y! - sin(r + hπ) * forward,
-      }));
+      forces.push({
+        x: -cos(r + hπ) * forward,
+        y: -sin(r + hπ) * forward,
+      });
       break;
     }
     case "ArrowRight": {
-      set(({ r }) => ({
-        r: (r + π / 20) % ππ,
-      }));
+      forces.push({
+        r: π / 720,
+      });
       break;
     }
     case "ArrowDown": {
-      set(({ x, y, r }) => ({
-        x: x! - cos(r + hπ) * reverse,
-        y: y! - sin(r + hπ) * reverse,
-      }));
+      forces.push({
+        x: -cos(r + hπ) * reverse,
+        y: -sin(r + hπ) * reverse,
+      });
       break;
     }
     case "ArrowLeft": {
-      set(({ r }) => ({
-        r: (r - π / 20) % ππ,
-      }));
+      forces.push({
+        r: -π / 720,
+      });
       break;
     }
   }
 };
 
-on(win, "keyup", onKeyUp);
+on(win, "keydown", onKeyDown);
+
+const step = ({ t, x, y, r, px, py, pr }: State, dt: number): void => {
+  let vx = (x - px) * f,
+    vy = (y - py) * f,
+    vr = ((r - pr) % ππ) * f;
+
+  forces.forEach(({ x, y, r }) => {
+    vx += x ?? 0;
+    vy += y ?? 0;
+    vr += r ?? 0;
+  });
+  forces.length = 0;
+
+  const h = hypot(vx, vy),
+    nr = r + vr,
+    nx = x - cos(nr + hπ) * h,
+    ny = y - sin(nr + hπ) * h;
+
+  set({
+    t: t + dt,
+    x: nx,
+    y: ny,
+    r: nr,
+    px: x,
+    py: y,
+    pr: r,
+  });
+};
 
 const ctx = c.getContext("2d")!;
-
-const step = ({ t }: State, dt: number): void => {
-  set({ t: t + dt });
-};
 
 const draw = ({ t, x, y, r, w, h }: State): void => {
   ctx.fillStyle = "hsl(100, 40%, 60%)";
