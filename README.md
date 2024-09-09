@@ -9,3 +9,18 @@ Triskaidekaphobia - from Ancient Greek τρεισκαίδεκα (treiskaídeka) 
 Hippopotamus - from Ancient Greek ἵππος (híppos) 'horse' and ποταμός (potamós) 'river', together meaning 'horse of the river'.
 
 Triskaidekapotamus - from Ancient Greek τρεισκαίδεκα (treiskaídeka) 'thirteen' and ποταμός (potamós) 'river', together meaning '13 rivers'.
+
+## Todo
+
+- [x] Setup a dev server
+- [x] Draw a boat
+- [x] Make it move around
+- [x] Animate its oars
+- [x] Do time stuff
+- [x] Do state stuff
+- [x] Do physics stuff
+- [x] Handle inputs better
+- [ ] Match the oars animation to inputs
+- [ ] Add a pond / ponds
+- [ ] Add hippopotamuses?
+- [ ] Add a title screen
