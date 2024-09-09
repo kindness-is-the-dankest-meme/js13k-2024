@@ -36,7 +36,7 @@ const lerpNum = (a: number, b: number, t: number): number =>
 
 const isObj = (x: unknown): x is Obj =>
   x != null && !isArr(x) && typeof x === "object";
-const lerpObj = (a: Obj, b: Obj, t: number): Val =>
+const lerpObj = (a: Obj, b: Obj, t: number): Obj =>
   fromEntries(
     entries(a).reduce<[string, Val][]>(
       (acc, [k, v]) => (
