@@ -25,14 +25,13 @@ const lerpArr = (as: Arr, bs: Arr, t: number): Arr =>
     []
   );
 
-const isNum = (x: unknown): x is number => typeof x === "number";
+const isNum = (x: unknown): x is Num => typeof x === "number";
 /**
  * prefer precise method
  * @see: https://github.com/mattdesl/lerp/blob/master/index.js
  * @see: https://en.wikipedia.org/wiki/Linear_interpolation#Programming_language_support
  */
-const lerpNum = (a: number, b: number, t: number): number =>
-  (1 - t) * a + t * b;
+const lerpNum = (a: Num, b: Num, t: number): Num => (1 - t) * a + t * b;
 
 const isObj = (x: unknown): x is Obj =>
   x != null && !isArr(x) && typeof x === "object";
