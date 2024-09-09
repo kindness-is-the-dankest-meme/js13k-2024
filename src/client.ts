@@ -1,7 +1,7 @@
 import { boat } from "./lib/boat.ts";
 import { kd } from "./lib/input.ts";
-import { cos, hypot, hπ, sin, π, ππ } from "./lib/maths.ts";
-import { entries, fromEntries, raf } from "./lib/platform.ts";
+import { cos, hypot, hπ, lerp, sin, π, ππ } from "./lib/maths.ts";
+import { entries, raf } from "./lib/platform.ts";
 import { resize } from "./lib/resize.ts";
 import { get, set, type State } from "./lib/state.ts";
 
@@ -26,9 +26,11 @@ const step = (state: State, dt: number): void => {
     vr = ((r - pr) % ππ) * f;
 
   if (kd.has("ArrowUp")) {
-    vx += cos(r - hπ) / 3;
-    vy += sin(r - hπ) / 3;
-    d = -1;
+    const nvx = cos(r - hπ) / 3;
+    const nvy = sin(r - hπ) / 3;
+    d = hypot(vx + nvx, vy + nvy) > hypot(vx, vy) ? -1 : 1;
+    vx += nvx;
+    vy += nvy;
   }
 
   if (kd.has("ArrowRight")) {
@@ -36,9 +38,11 @@ const step = (state: State, dt: number): void => {
   }
 
   if (kd.has("ArrowDown")) {
-    vx += cos(r + hπ) / 6;
-    vy += sin(r + hπ) / 6;
-    d = 1;
+    const nvx = cos(r + hπ) / 6;
+    const nvy = sin(r + hπ) / 6;
+    d = hypot(vx + nvx, vy + nvy) > hypot(vx, vy) ? 1 : -1;
+    vx += nvx;
+    vy += nvy;
   }
 
   if (kd.has("ArrowLeft")) {
@@ -87,15 +91,6 @@ const draw = ({ t, x, y, r, w, h }: State): void => {
 
   boat(ctx, t, x, y, r);
 };
-
-const lerp = <T extends Record<PropertyKey, number>>(
-  a: T,
-  b: T,
-  t: number
-): T =>
-  fromEntries(
-    entries(a).map(([k, v]) => [k, v * (1 - t) + b[k as keyof T] * t])
-  ) as T;
 
 const loop = (() => {
   const dt = 10;

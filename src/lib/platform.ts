@@ -4,4 +4,6 @@ export const win = window,
     requestAnimationFrame: raf,
     structuredClone: dup,
     Object: { entries, fromEntries, is },
+    Array: { isArray },
+    JSON: { parse, stringify },
   } = win;
