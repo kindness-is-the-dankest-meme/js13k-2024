@@ -83,9 +83,9 @@ const ctx = c.getContext("2d")!;
 const b = boat(ctx);
 
 const draw = (state: State): void => {
-  const { w, h } = state;
+  const { cw, ch } = state;
   ctx.fillStyle = "hsl(100, 40%, 60%)";
-  ctx.fillRect(0, 0, w, h);
+  ctx.fillRect(0, 0, cw, ch);
 
   // ctx.font = "bold 8rem sans-serif";
   // ctx.textAlign = "center";
