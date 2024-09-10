@@ -15,8 +15,8 @@ export type State = {
   w: number;
   h: number;
   // window size
-  hw: number;
-  hh: number;
+  ww: number;
+  wh: number;
 };
 
 type ParState = State | Partial<State>;
@@ -33,8 +33,8 @@ export const { get, set } = (() => {
     pr: 0,
     w: 0,
     h: 0,
-    hw: 0,
-    hh: 0,
+    ww: 0,
+    wh: 0,
   };
 
   const get = () => state;

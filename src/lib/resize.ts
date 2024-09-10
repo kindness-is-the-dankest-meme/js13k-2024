@@ -6,22 +6,22 @@ export const resize = (c: HTMLElementTagNameMap["canvas"]): void => {
   const s = 1 / dpr;
 
   on(w, "resize", () => {
-    const { innerWidth: hw, innerHeight: hh } = w;
+    const { innerWidth: ww, innerHeight: wh } = w;
 
     set(({ x, y, px, py }) => ({
-      hw,
-      hh,
-      w: hw * dpr,
-      h: hh * dpr,
+      ww,
+      wh,
+      w: ww * dpr,
+      h: wh * dpr,
 
-      x: x || hw,
-      y: y || hh,
-      px: px || hw,
-      py: py || hh,
+      x: x || ww,
+      y: y || wh,
+      px: px || ww,
+      py: py || wh,
     }));
 
-    c.width = hw * dpr;
-    c.height = hh * dpr;
+    c.width = ww * dpr;
+    c.height = wh * dpr;
     c.style.transform = `scale(${s})`;
   });
 
