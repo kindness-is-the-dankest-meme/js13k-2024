@@ -1,5 +1,5 @@
 import { boat } from "./lib/boat.ts";
-import { kd, ku } from "./lib/input.ts";
+import { ku } from "./lib/input.ts";
 import { cos, hypot, hπ, lerp, sin, π, ππ } from "./lib/maths.ts";
 import { entries, raf } from "./lib/platform.ts";
 import { resize } from "./lib/resize.ts";
