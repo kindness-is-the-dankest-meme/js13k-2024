@@ -1,5 +1,5 @@
 import { boat } from "./lib/boat.ts";
-import { kd } from "./lib/input.ts";
+import { kd, ku } from "./lib/input.ts";
 import { cos, hypot, hπ, lerp, sin, π, ππ } from "./lib/maths.ts";
 import { entries, raf } from "./lib/platform.ts";
 import { resize } from "./lib/resize.ts";
@@ -25,29 +25,31 @@ const step = (state: State, dt: number): void => {
     vy = (y - py) * f,
     vr = ((r - pr) % ππ) * f;
 
-  if (kd.has("ArrowUp")) {
-    const nvx = cos(r - hπ) / 3;
-    const nvy = sin(r - hπ) / 3;
+  if (ku.has("ArrowUp")) {
+    const nvx = cos(r - hπ) * 5;
+    const nvy = sin(r - hπ) * 5;
     d = hypot(vx + nvx, vy + nvy) > hypot(vx, vy) ? -1 : 1;
     vx += nvx;
     vy += nvy;
   }
 
-  if (kd.has("ArrowRight")) {
-    vr += π / 1440;
+  if (ku.has("ArrowRight")) {
+    vr += π / 180;
   }
 
-  if (kd.has("ArrowDown")) {
-    const nvx = cos(r + hπ) / 6;
-    const nvy = sin(r + hπ) / 6;
+  if (ku.has("ArrowDown")) {
+    const nvx = cos(r + hπ) * 2;
+    const nvy = sin(r + hπ) * 2;
     d = hypot(vx + nvx, vy + nvy) > hypot(vx, vy) ? 1 : -1;
     vx += nvx;
     vy += nvy;
   }
 
-  if (kd.has("ArrowLeft")) {
-    vr += -π / 1440;
+  if (ku.has("ArrowLeft")) {
+    vr += -π / 180;
   }
+
+  ku.clear();
 
   const h = hypot(vx, vy),
     nr = r + vr,
@@ -78,8 +80,10 @@ const step = (state: State, dt: number): void => {
 };
 
 const ctx = c.getContext("2d")!;
+const b = boat(ctx);
 
-const draw = ({ t, x, y, r, w, h }: State): void => {
+const draw = (state: State): void => {
+  const { w, h } = state;
   ctx.fillStyle = "hsl(100, 40%, 60%)";
   ctx.fillRect(0, 0, w, h);
 
@@ -89,7 +93,7 @@ const draw = ({ t, x, y, r, w, h }: State): void => {
   // ctx.fillStyle = "hsla(50, 10%, 90%, 0.1)";
   // ctx.fillText("hello", hw, hh);
 
-  boat(ctx, t, x, y, r);
+  b(state);
 };
 
 const loop = (() => {
