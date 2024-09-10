@@ -1,4 +1,4 @@
-export const win = window,
+export const w = window,
   {
     devicePixelRatio: dpr,
     requestAnimationFrame: raf,
@@ -6,4 +6,4 @@ export const win = window,
     Object: { entries, fromEntries, is },
     Array: { isArray },
     JSON: { parse, stringify },
-  } = win;
+  } = w;
