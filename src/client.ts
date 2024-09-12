@@ -12,7 +12,8 @@ declare const p: HTMLElementTagNameMap["pre"];
 resize(c);
 
 const f = 0.95,
-  swing = 19 / 8;
+  swing = 19 / 8,
+  force = 0.1;
 let d = 1;
 
 const step = (state: State, dt: number): void => {
@@ -26,31 +27,30 @@ const step = (state: State, dt: number): void => {
     vy = (y - py) * f,
     vr = ((r - pr) % ππ) * f,
     vrr = ((rr - prr) % ππ) * f,
-    vlr = ((lr - plr) % ππ) * f;
+    vlr = ((lr - plr) % ππ) * f,
+    trr = rr,
+    tlr = lr;
 
   if (kd.has("ArrowUp")) {
-    const trr = -π / swing,
-      tlr = -trr + π;
-    vrr = trr - rr;
-    vlr = tlr - lr;
+    trr = -π / swing;
+    tlr = -trr + π;
   }
 
   if (kd.has("ArrowRight")) {
-    const tlr = π;
-    vlr = tlr - lr;
+    tlr = hπ / swing + π;
   }
 
   if (kd.has("ArrowDown")) {
-    const trr = hπ / swing,
-      tlr = -trr + π;
-    vrr = trr - rr;
-    vlr = tlr - lr;
+    trr = hπ / swing;
+    tlr = -trr + π;
   }
 
   if (kd.has("ArrowLeft")) {
-    const trr = 0;
-    vrr = trr - rr;
+    trr = -hπ / swing;
   }
+
+  vrr = (trr - rr) * force;
+  vlr = (tlr - lr) * force;
 
   if (ku.has("ArrowUp")) {
     const nvx = cos(r - hπ) * 5,
@@ -120,15 +120,15 @@ const ctx = c.getContext("2d")!;
 const b = boat(ctx);
 
 const draw = (state: State): void => {
-  const { cw, ch } = state;
+  const { cw, ch, ww, wh } = state;
   ctx.fillStyle = "hsl(100, 40%, 60%)";
   ctx.fillRect(0, 0, cw, ch);
 
-  // ctx.font = "bold 8rem sans-serif";
-  // ctx.textAlign = "center";
-  // ctx.textBaseline = "middle";
-  // ctx.fillStyle = "hsla(50, 10%, 90%, 0.1)";
-  // ctx.fillText("hello", hw, hh);
+  ctx.font = "bold 8rem Georgia";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "hsla(50, 10%, 90%, 0.2)";
+  ctx.fillText("13 Rivers", ww, wh);
 
   b(state);
 };
