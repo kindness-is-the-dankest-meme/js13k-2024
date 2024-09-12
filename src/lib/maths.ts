@@ -47,6 +47,7 @@ const lerpObj = (a: Obj, b: Obj, t: number): Obj =>
 
 const canLerp = (a: unknown, b: unknown): boolean =>
   a != null && b != null && typeof a === typeof b;
+
 export const lerp = <T>(a: T, b: T, t: number): T => {
   switch (true) {
     case isArr(a) && isArr(b): {
