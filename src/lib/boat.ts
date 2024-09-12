@@ -32,8 +32,8 @@ const hull = (() => {
 const oar = (() => {
   const p = new Path2D();
 
-  p.rect(-20, -2, 80, 4);
-  p.ellipse(80, 0, 20, 10, 0, 0, ππ);
+  p.rect(-20, -2, 90, 4);
+  p.ellipse(90, 0, 20, 10, 0, 0, ππ);
   p.closePath();
 
   return p;
@@ -49,13 +49,13 @@ export const boat =
     ctx.fill(hull, "evenodd");
 
     ctx.save();
-    ctx.translate(32, 0);
+    ctx.translate(45, 0);
     ctx.rotate(rr);
     ctx.fill(oar);
     ctx.restore();
 
     ctx.save();
-    ctx.translate(-32, 0);
+    ctx.translate(-45, 0);
     ctx.rotate(lr);
     ctx.fill(oar);
     ctx.restore();
