@@ -1,18 +1,7 @@
 import { boat } from "./lib/boat.ts";
 import { kd, ku } from "./lib/input.ts";
-import {
-  atan2,
-  cos,
-  hypot,
-  hπ,
-  lerp,
-  round,
-  sin,
-  sqrt,
-  π,
-  ππ,
-} from "./lib/maths.ts";
-import { dup, entries, raf, stringify } from "./lib/platform.ts";
+import { atan2, cos, hypot, hπ, lerp, sin, sqrt, π, ππ } from "./lib/maths.ts";
+import { dup, entries, raf, stringify, values } from "./lib/platform.ts";
 import { resize } from "./lib/resize.ts";
 import {
   Distance,
@@ -35,22 +24,14 @@ type TransformConfig = Position & Partial<Rotation>;
 type ParticleConfig = TransformConfig & Partial<Prefixed<TransformConfig, "p">>;
 
 const createParticle = ({ x, y, r, px, py, pr }: ParticleConfig): Particle => ({
-  x,
-  y,
-  r: r ?? 0,
-  px: px ?? x,
-  py: py ?? y,
-  pr: pr ?? r ?? 0,
-});
-
-type DistConfig = { a: Particle; b: Particle };
-
-const createDistCons = ({ a, b }: DistConfig): Distance => ({
-  a,
-  b,
-  s: 0.99,
-  t: hypot(b.x - a.x, b.y - a.y),
-});
+    x,
+    y,
+    r: r ?? 0,
+    px: px ?? x,
+    py: py ?? y,
+    pr: pr ?? r ?? 0,
+  }),
+  stiffness = 0.99;
 
 const init = () => {
   /**
@@ -70,55 +51,62 @@ const init = () => {
     i = atan2(-o, a),
     j = atan2(o, a),
     k = j - j / 3,
-    ps = [
-      createParticle({
+    ps = {
+      a: createParticle({
         x: hcw,
         y: hch + sin(i) * h,
       }),
-      createParticle({
+      b: createParticle({
         x: hcw + 45,
         y: hch,
       }),
-      createParticle({
+      c: createParticle({
         x: hcw - a + cos(i + j / 3) * h,
         y: hch + sin(k) * h,
       }),
-      createParticle({
+      d: createParticle({
         x: hcw + a + cos(i + j / 3 + π) * h,
         y: hch + sin(k) * h,
       }),
-      createParticle({
+      e: createParticle({
         x: hcw - 45,
         y: hch,
       }),
-      createParticle({
+      f: createParticle({
         x: hcw + 135,
         y: hch,
       }),
-      createParticle({
+      g: createParticle({
         x: hcw - 135,
         y: hch,
       }),
-    ],
-    cs = [
-      [0, 1],
-      [0, 2],
-      [0, 3],
-      [0, 4],
-      [1, 2],
-      [1, 3],
-      [1, 4],
-      [2, 3],
-      [2, 4],
-      [3, 4],
-      [1, 5],
-      [4, 6],
-    ].map(([a, b]) => createDistCons({ a: ps[a], b: ps[b] }));
+    },
+    cs = (
+      [
+        ["a", "b"],
+        ["a", "c"],
+        ["a", "d"],
+        ["a", "e"],
+        ["b", "c"],
+        ["b", "d"],
+        ["b", "e"],
+        ["c", "d"],
+        ["c", "e"],
+        ["d", "e"],
+        ["b", "f"],
+        ["e", "g"],
+      ] as unknown as [keyof typeof ps, keyof typeof ps][]
+    ).map(([a, b]) => ({
+      a,
+      b,
+      s: stiffness,
+      t: hypot(ps[b].x - ps[a].x, ps[b].y - ps[a].y),
+    }));
 
   set({ ps, cs });
 };
 
-const f = 0.95,
+const friction = 0.95,
   swing = 19 / 8,
   force = 0.1;
 
@@ -130,11 +118,11 @@ const step = (state: State, dt: number): void => {
   const { t, d, ps, cs, x, y, r, px, py, pr, rr, lr, prr, plr } = state,
     nps = dup(ps);
 
-  let vx = (x - px) * f,
-    vy = (y - py) * f,
-    vr = ((r - pr) % ππ) * f,
-    vrr = ((rr - prr) % ππ) * f,
-    vlr = ((lr - plr) % ππ) * f,
+  let vx = (x - px) * friction,
+    vy = (y - py) * friction,
+    vr = ((r - pr) % ππ) * friction,
+    vrr = ((rr - prr) % ππ) * friction,
+    vlr = ((lr - plr) % ππ) * friction,
     trr = rr,
     tlr = lr,
     nd = d;
@@ -157,11 +145,15 @@ const step = (state: State, dt: number): void => {
     trr = -hπ / swing;
   }
 
-  nps[5].x = nps[1].x + cos(trr) * cs[10].t;
-  nps[5].y = nps[1].y + sin(trr) * cs[10].t;
+  nps["f"].px = nps["f"].x;
+  nps["f"].py = nps["f"].y;
+  nps["f"].x = nps["b"].x + cos(trr) * cs[10].t;
+  nps["f"].y = nps["b"].y + sin(trr) * cs[10].t;
 
-  nps[6].x = nps[4].x + cos(tlr) * cs[11].t;
-  nps[6].y = nps[4].y + sin(tlr) * cs[11].t;
+  nps["g"].px = nps["g"].x;
+  nps["g"].py = nps["g"].y;
+  nps["g"].x = nps["e"].x + cos(tlr) * cs[11].t;
+  nps["g"].y = nps["e"].y + sin(tlr) * cs[11].t;
 
   vrr = (trr - rr) * force;
   vlr = (tlr - lr) * force;
@@ -217,20 +209,6 @@ const step = (state: State, dt: number): void => {
     t: t + dt,
     d: nd,
     ps: nps,
-    cs: [
-      [0, 1],
-      [0, 2],
-      [0, 3],
-      [0, 4],
-      [1, 2],
-      [1, 3],
-      [1, 4],
-      [2, 3],
-      [2, 4],
-      [3, 4],
-      [1, 5],
-      [4, 6],
-    ].map(([a, b]) => createDistCons({ a: ps[a], b: ps[b] })),
     x: nx,
     y: ny,
     r: nr,
@@ -261,7 +239,7 @@ const draw = (state: State): void => {
 
   b(state);
 
-  ps.forEach(({ x, y }) => {
+  values(ps).forEach(({ x, y }) => {
     ctx.save();
     ctx.translate(x, y);
     ctx.beginPath();
@@ -272,8 +250,8 @@ const draw = (state: State): void => {
 
   cs.forEach(({ a, b }) => {
     ctx.beginPath();
-    ctx.moveTo(a.x, a.y);
-    ctx.lineTo(b.x, b.y);
+    ctx.moveTo(ps[a].x, ps[a].y);
+    ctx.lineTo(ps[b].x, ps[b].y);
     ctx.stroke();
   });
 };
