@@ -6,22 +6,19 @@ const hull = (() => {
    * a = adjacent
    * h = hypotenuse
    * o = opposite
-   */
-  const a = 155;
-  const h = 200;
-  const o = sqrt(h * h - a * a);
-
-  /**
+   *
    * i = angle to upper point of intersection
    * j = angle to lower point of intersection
    * k = angle 2/3rds to the lower point
    *     (the back of the boat is flat)
    */
-  const i = atan2(-o, a);
-  const j = atan2(o, a);
-  const k = j - j / 3;
-
-  const p = new Path2D();
+  const a = 155,
+    h = 200,
+    o = sqrt(h * h - a * a),
+    i = atan2(-o, a),
+    j = atan2(o, a),
+    k = j - j / 3,
+    p = new Path2D();
 
   p.ellipse(0, 0, 30, 40, 0, 0, ππ);
   p.moveTo(a + cos(i + j / 3 + π) * h, sin(k) * h);
