@@ -90,7 +90,7 @@ const step = (state: State, dt: number): void => {
     `vr: ${vr}`,
     `vx: ${vx}`,
     `vy: ${vy}`,
-    "\n",
+    "",
     `h: ${h}`,
     `nr: ${nr}`,
     `nx: ${nx}`,
