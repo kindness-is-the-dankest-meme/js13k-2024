@@ -1,9 +1,29 @@
 import { boat } from "./lib/boat.ts";
 import { kd, ku } from "./lib/input.ts";
-import { cos, hypot, hπ, lerp, sin, π, ππ } from "./lib/maths.ts";
-import { entries, raf } from "./lib/platform.ts";
+import {
+  atan2,
+  cos,
+  hypot,
+  hπ,
+  lerp,
+  round,
+  sin,
+  sqrt,
+  π,
+  ππ,
+} from "./lib/maths.ts";
+import { entries, raf, stringify } from "./lib/platform.ts";
 import { resize } from "./lib/resize.ts";
-import { get, set, type State } from "./lib/state.ts";
+import {
+  Distance,
+  get,
+  Particle,
+  Position,
+  Prefixed,
+  Rotation,
+  set,
+  type State,
+} from "./lib/state.ts";
 
 declare const m: HTMLElementTagNameMap["main"];
 declare const c: HTMLElementTagNameMap["canvas"];
@@ -11,13 +31,100 @@ declare const p: HTMLElementTagNameMap["pre"];
 
 resize(c);
 
+type TransformConfig = Position & Partial<Rotation>;
+type ParticleConfig = TransformConfig & Partial<Prefixed<TransformConfig, "p">>;
+
+const createParticle = ({ x, y, r, px, py, pr }: ParticleConfig): Particle => ({
+  x,
+  y,
+  r: r ?? 0,
+  px: px ?? x,
+  py: py ?? y,
+  pr: pr ?? r ?? 0,
+});
+
+type DistConfig = { a: Particle; b: Particle };
+
+const createDistCons = ({ a, b }: DistConfig): Distance => ({
+  a,
+  b,
+  s: 0.99,
+  t: hypot(b.x - a.x, b.y - a.y),
+});
+
+const init = () => {
+  /**
+   * a = adjacent
+   * h = hypotenuse
+   * o = opposite
+   *
+   * i = angle to upper point of intersection
+   * j = angle to lower point of intersection
+   * k = angle 2/3rds to the lower point
+   *     (the back of the boat is flat)
+   */
+  const { hcw, hch } = get(),
+    a = 155,
+    h = 200,
+    o = sqrt(h * h - a * a),
+    i = atan2(-o, a),
+    j = atan2(o, a),
+    k = j - j / 3,
+    ps = [
+      createParticle({
+        x: hcw,
+        y: hch + sin(i) * h,
+      }),
+      createParticle({
+        x: hcw + 45,
+        y: hch,
+      }),
+      createParticle({
+        x: hcw - a + cos(i + j / 3) * h,
+        y: hch + sin(k) * h,
+      }),
+      createParticle({
+        x: hcw + a + cos(i + j / 3 + π) * h,
+        y: hch + sin(k) * h,
+      }),
+      createParticle({
+        x: hcw - 45,
+        y: hch,
+      }),
+      createParticle({
+        x: hcw + 135,
+        y: hch,
+      }),
+      createParticle({
+        x: hcw - 135,
+        y: hch,
+      }),
+    ],
+    cs = [
+      [0, 1],
+      [0, 2],
+      [0, 3],
+      [0, 4],
+      [1, 2],
+      [1, 3],
+      [1, 4],
+      [2, 3],
+      [2, 4],
+      [3, 4],
+      [1, 5],
+      [4, 6],
+    ].map(([a, b]) => createDistCons({ a: ps[a], b: ps[b] }));
+
+  set({ ps, cs });
+};
+
 const f = 0.95,
   swing = 19 / 8,
   force = 0.1;
 
 const step = (state: State, dt: number): void => {
   p.innerText = entries(state)
-    .map(([k, v]) => `${k}: ${v}`)
+    .map(([k, v]) => `${k}: ${stringify(v)}`)
     .join("\n");
 
   const { t, d, x, y, r, px, py, pr, rr, lr, prr, plr } = state;
@@ -119,7 +226,8 @@ const ctx = c.getContext("2d")!,
   b = boat(ctx);
 
 const draw = (state: State): void => {
-  const { cw, ch /* , ww, wh */ } = state;
+  const { ps, cs, cw, ch /* , ww, wh */ } = state;
+
   ctx.fillStyle = "hsl(100, 40%, 60%)";
   ctx.fillRect(0, 0, cw, ch);
 
@@ -130,6 +238,22 @@ const draw = (state: State): void => {
   // ctx.fillText("13 Rivers", ww, wh);
 
   b(state);
+
+  ps.forEach(({ x, y }) => {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.beginPath();
+    ctx.arc(0, 0, 5, 0, ππ);
+    ctx.stroke();
+    ctx.restore();
+  });
+
+  cs.forEach(({ a, b }) => {
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+  });
 };
 
 const loop = (() => {
@@ -137,13 +261,15 @@ const loop = (() => {
 
   let pt: DOMHighResTimeStamp = performance.now(),
     ot = 0,
-    ft: number;
+    ft = 0;
 
-  return (time: DOMHighResTimeStamp) => {
+  init();
+
+  return (t: DOMHighResTimeStamp) => {
     raf(loop);
 
-    ft = time - pt;
-    pt = time;
+    ft = t - pt;
+    pt = t;
     ot += ft;
 
     let state = get();
