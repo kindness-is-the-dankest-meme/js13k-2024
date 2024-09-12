@@ -46,9 +46,11 @@ type Constraint = Angle | Distance;
 type Body = {
   ps: Particle[];
   cs: Constraint[];
+  // draw function?
+  // children?
 };
 
-export type State = { t: number; d: number } & Particle &
+export type State = { t: number; d: number; bds: Body[] } & Particle &
   Prefixed<Rotation, "r"> &
   Prefixed<Rotation, "l"> &
   Prefixed<Rotation, "pr"> &
@@ -65,6 +67,8 @@ export const { get, set } = (() => {
     t: 0,
     // direction (1 is forward, -1 is reverse)
     d: 1,
+    // bodies
+    bds: [],
     // current position / rotation
     x: 0,
     y: 0,
