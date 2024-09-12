@@ -1,8 +1,8 @@
 {
   "tasks": {
     "dev": "deno run -ENR --watch scripts/dev.ts",
-    "zip": "deno run -ERW scripts/zip.ts",
-    "pre": "deno run -ENRW scripts/zip.ts serve"
+    "pre": "deno run -ENRW scripts/zip.ts serve",
+    "zip": "deno run -ERW scripts/zip.ts"
   },
   "imports": {},
   "compilerOptions": {
