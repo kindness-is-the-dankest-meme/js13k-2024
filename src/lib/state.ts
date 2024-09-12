@@ -1,12 +1,12 @@
 import { π } from "./maths.ts";
 import { is } from "./platform.ts";
 
-type Position = {
+export type Position = {
   x: number;
   y: number;
 };
 
-type Rotation = {
+export type Rotation = {
   r: number;
 };
 
@@ -15,7 +15,7 @@ type Size = {
   h: number;
 };
 
-type Prefixed<T, P extends string> = {
+export type Prefixed<T, P extends string> = {
   [K in keyof T as `${P}${string & K}`]: T[K];
 };
 
@@ -23,7 +23,7 @@ type Sized<T extends string> = Prefixed<Size, T>;
 
 type Transform = Position & Rotation;
 
-type Particle = Transform & Prefixed<Transform, "p">;
+export type Particle = Transform & Prefixed<Transform, "p">;
 
 type Angle = {
   a: Particle;
@@ -33,7 +33,7 @@ type Angle = {
   t: number; // target (angle)
 };
 
-type Distance = {
+export type Distance = {
   a: Particle;
   b: Particle;
   s: number; // stiffness
@@ -43,19 +43,21 @@ type Distance = {
 type Constraint = Angle | Distance;
 
 // Composite?
-type Body = {
+type Sys = {
   ps: Particle[];
   cs: Constraint[];
   // draw function?
   // children?
 };
 
-export type State = { t: number; d: number; bds: Body[] } & Particle &
+export type State = { t: number; d: number } & Sys &
+  Particle &
   Prefixed<Rotation, "r"> &
   Prefixed<Rotation, "l"> &
   Prefixed<Rotation, "pr"> &
   Prefixed<Rotation, "pl"> &
   Sized<"c"> &
+  Sized<"hc"> &
   Sized<"w">;
 
 type ParState = State | Partial<State>;
@@ -67,8 +69,10 @@ export const { get, set } = (() => {
     t: 0,
     // direction (1 is forward, -1 is reverse)
     d: 1,
-    // bodies
-    bds: [],
+    // particles
+    ps: [],
+    // constraints
+    cs: [],
     // current position / rotation
     x: 0,
     y: 0,
@@ -86,6 +90,9 @@ export const { get, set } = (() => {
     // canvas size
     cw: 0,
     ch: 0,
+    // half canvas size
+    hcw: 0,
+    hch: 0,
     // window size
     ww: 0,
     wh: 0,

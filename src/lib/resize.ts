@@ -9,19 +9,23 @@ export const resize = (c: HTMLElementTagNameMap["canvas"]): void => {
     const { innerWidth: ww, innerHeight: wh } = w,
       cw = ww * dpr,
       ch = wh * dpr,
-      hw = cw / 2,
-      hh = ch / 2;
+      hcw = cw / 2,
+      hch = ch / 2;
 
     set(({ x, y, px, py }) => ({
-      ww,
-      wh,
+      x: x || hcw,
+      y: y || hch,
+      px: px || hcw,
+      py: py || hch,
+
       cw,
       ch,
 
-      x: x || hw,
-      y: y || hh,
-      px: px || hw,
-      py: py || hh,
+      hcw,
+      hch,
+
+      ww,
+      wh,
     }));
 
     c.width = cw;
