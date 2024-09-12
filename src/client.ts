@@ -12,7 +12,7 @@ import {
   π,
   ππ,
 } from "./lib/maths.ts";
-import { entries, raf, stringify } from "./lib/platform.ts";
+import { dup, entries, raf, stringify } from "./lib/platform.ts";
 import { resize } from "./lib/resize.ts";
 import {
   Distance,
@@ -127,7 +127,8 @@ const step = (state: State, dt: number): void => {
     .map(([k, v]) => `${k}: ${stringify(v)}`)
     .join("\n");
 
-  const { t, d, x, y, r, px, py, pr, rr, lr, prr, plr } = state;
+  const { t, d, ps, cs, x, y, r, px, py, pr, rr, lr, prr, plr } = state,
+    nps = dup(ps);
 
   let vx = (x - px) * f,
     vy = (y - py) * f,
@@ -155,6 +156,12 @@ const step = (state: State, dt: number): void => {
   if (kd.has("ArrowLeft")) {
     trr = -hπ / swing;
   }
+
+  nps[5].x = nps[1].x + cos(trr) * cs[10].t;
+  nps[5].y = nps[1].y + sin(trr) * cs[10].t;
+
+  nps[6].x = nps[4].x + cos(tlr) * cs[11].t;
+  nps[6].y = nps[4].y + sin(tlr) * cs[11].t;
 
   vrr = (trr - rr) * force;
   vlr = (tlr - lr) * force;
@@ -209,6 +216,21 @@ const step = (state: State, dt: number): void => {
   set({
     t: t + dt,
     d: nd,
+    ps: nps,
+    cs: [
+      [0, 1],
+      [0, 2],
+      [0, 3],
+      [0, 4],
+      [1, 2],
+      [1, 3],
+      [1, 4],
+      [2, 3],
+      [2, 4],
+      [3, 4],
+      [1, 5],
+      [4, 6],
+    ].map(([a, b]) => createDistCons({ a: ps[a], b: ps[b] })),
     x: nx,
     y: ny,
     r: nr,
