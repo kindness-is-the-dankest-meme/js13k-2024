@@ -48,7 +48,7 @@ type Body = {
   cs: Constraint[];
 };
 
-export type State = { t: number } & Particle &
+export type State = { t: number; d: number } & Particle &
   Prefixed<Rotation, "r"> &
   Prefixed<Rotation, "l"> &
   Prefixed<Rotation, "pr"> &
@@ -63,6 +63,8 @@ export const { get, set } = (() => {
   let state: State = {
     // time (ms)
     t: 0,
+    // direction (1 is forward, -1 is reverse)
+    d: 1,
     // current position / rotation
     x: 0,
     y: 0,

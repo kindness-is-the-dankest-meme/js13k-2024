@@ -14,14 +14,13 @@ resize(c);
 const f = 0.95,
   swing = 19 / 8,
   force = 0.1;
-let d = 1;
 
 const step = (state: State, dt: number): void => {
   p.innerText = entries(state)
     .map(([k, v]) => `${k}: ${v}`)
     .join("\n");
 
-  const { t, x, y, r, px, py, pr, rr, lr, prr, plr } = state;
+  const { t, d, x, y, r, px, py, pr, rr, lr, prr, plr } = state;
 
   let vx = (x - px) * f,
     vy = (y - py) * f,
@@ -29,7 +28,8 @@ const step = (state: State, dt: number): void => {
     vrr = ((rr - prr) % ππ) * f,
     vlr = ((lr - plr) % ππ) * f,
     trr = rr,
-    tlr = lr;
+    tlr = lr,
+    nd = d;
 
   if (kd.has("ArrowUp")) {
     trr = -π / swing;
@@ -52,31 +52,29 @@ const step = (state: State, dt: number): void => {
   vrr = (trr - rr) * force;
   vlr = (tlr - lr) * force;
 
-  if (ku.has("ArrowUp")) {
+  if (ku.delete("ArrowUp")) {
     const nvx = cos(r - hπ) * 5,
       nvy = sin(r - hπ) * 5;
-    d = hypot(vx + nvx, vy + nvy) > hypot(vx, vy) ? -1 : 1;
+    nd = hypot(vx + nvx, vy + nvy) > hypot(vx, vy) ? -1 : 1;
     vx += nvx;
     vy += nvy;
   }
 
-  if (ku.has("ArrowRight")) {
+  if (ku.delete("ArrowRight")) {
     vr += π / 180;
   }
 
-  if (ku.has("ArrowDown")) {
+  if (ku.delete("ArrowDown")) {
     const nvx = cos(r + hπ) * 2,
       nvy = sin(r + hπ) * 2;
-    d = hypot(vx + nvx, vy + nvy) > hypot(vx, vy) ? 1 : -1;
+    nd = hypot(vx + nvx, vy + nvy) > hypot(vx, vy) ? 1 : -1;
     vx += nvx;
     vy += nvy;
   }
 
-  if (ku.has("ArrowLeft")) {
+  if (ku.delete("ArrowLeft")) {
     vr += -π / 180;
   }
-
-  ku.clear();
 
   const h = hypot(vx, vy),
     nr = r + vr,
@@ -103,6 +101,7 @@ const step = (state: State, dt: number): void => {
 
   set({
     t: t + dt,
+    d: nd,
     x: nx,
     y: ny,
     r: nr,
@@ -116,19 +115,19 @@ const step = (state: State, dt: number): void => {
   });
 };
 
-const ctx = c.getContext("2d")!;
-const b = boat(ctx);
+const ctx = c.getContext("2d")!,
+  b = boat(ctx);
 
 const draw = (state: State): void => {
-  const { cw, ch, ww, wh } = state;
+  const { cw, ch /* , ww, wh */ } = state;
   ctx.fillStyle = "hsl(100, 40%, 60%)";
   ctx.fillRect(0, 0, cw, ch);
 
-  ctx.font = "bold 8rem Georgia";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = "hsla(50, 10%, 90%, 0.2)";
-  ctx.fillText("13 Rivers", ww, wh);
+  // ctx.font = "bold 8rem Georgia";
+  // ctx.textAlign = "center";
+  // ctx.textBaseline = "middle";
+  // ctx.fillStyle = "hsla(50, 10%, 90%, 0.2)";
+  // ctx.fillText("13 Rivers", ww, wh);
 
   b(state);
 };
