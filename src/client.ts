@@ -90,11 +90,15 @@ const step = (state: State, dt: number): void => {
     `vr: ${vr}`,
     `vx: ${vx}`,
     `vy: ${vy}`,
+    `vrr: ${vrr}`,
+    `vlr: ${vlr}`,
     "",
     `h: ${h}`,
     `nr: ${nr}`,
     `nx: ${nx}`,
     `ny: ${ny}`,
+    `nrr: ${nrr}`,
+    `nlr: ${nlr}`,
   ].join("\n");
 
   set({
