@@ -26,16 +26,16 @@ type Transform = Position & Rotation;
 export type Particle = Transform & Prefixed<Transform, "p">;
 
 type Angle = {
-  a: Particle;
-  b: Particle;
-  c: Particle;
+  a: string;
+  b: string;
+  c: string;
   s: number; // stiffness
   t: number; // target (angle)
 };
 
 export type Distance = {
-  a: Particle;
-  b: Particle;
+  a: string;
+  b: string;
   s: number; // stiffness
   t: number; // target (length)
 };
@@ -44,7 +44,7 @@ type Constraint = Angle | Distance;
 
 // Composite?
 type Sys = {
-  ps: Particle[];
+  ps: { [id: string]: Particle };
   cs: Constraint[];
   // draw function?
   // children?
@@ -70,7 +70,7 @@ export const { get, set } = (() => {
     // direction (1 is forward, -1 is reverse)
     d: 1,
     // particles
-    ps: [],
+    ps: {},
     // constraints
     cs: [],
     // current position / rotation
