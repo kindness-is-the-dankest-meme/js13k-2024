@@ -1,5 +1,5 @@
 import { boat } from "./lib/boat.ts";
-import { ku } from "./lib/input.ts";
+import { kd, ku } from "./lib/input.ts";
 import { cos, hypot, hπ, lerp, sin, π, ππ } from "./lib/maths.ts";
 import { entries, raf } from "./lib/platform.ts";
 import { resize } from "./lib/resize.ts";
@@ -11,7 +11,8 @@ declare const p: HTMLElementTagNameMap["pre"];
 
 resize(c);
 
-const f = 0.95;
+const f = 0.95,
+  swing = 19 / 8;
 let d = 1;
 
 const step = (state: State, dt: number): void => {
@@ -19,15 +20,41 @@ const step = (state: State, dt: number): void => {
     .map(([k, v]) => `${k}: ${v}`)
     .join("\n");
 
-  const { t, x, y, r, px, py, pr } = state;
+  const { t, x, y, r, px, py, pr, rr, lr, prr, plr } = state;
 
   let vx = (x - px) * f,
     vy = (y - py) * f,
-    vr = ((r - pr) % ππ) * f;
+    vr = ((r - pr) % ππ) * f,
+    vrr = ((rr - prr) % ππ) * f,
+    vlr = ((lr - plr) % ππ) * f;
+
+  if (kd.has("ArrowUp")) {
+    const trr = -π / swing,
+      tlr = -trr + π;
+    vrr = trr - rr;
+    vlr = tlr - lr;
+  }
+
+  if (kd.has("ArrowRight")) {
+    const tlr = π;
+    vlr = tlr - lr;
+  }
+
+  if (kd.has("ArrowDown")) {
+    const trr = hπ / swing,
+      tlr = -trr + π;
+    vrr = trr - rr;
+    vlr = tlr - lr;
+  }
+
+  if (kd.has("ArrowLeft")) {
+    const trr = 0;
+    vrr = trr - rr;
+  }
 
   if (ku.has("ArrowUp")) {
-    const nvx = cos(r - hπ) * 5;
-    const nvy = sin(r - hπ) * 5;
+    const nvx = cos(r - hπ) * 5,
+      nvy = sin(r - hπ) * 5;
     d = hypot(vx + nvx, vy + nvy) > hypot(vx, vy) ? -1 : 1;
     vx += nvx;
     vy += nvy;
@@ -38,8 +65,8 @@ const step = (state: State, dt: number): void => {
   }
 
   if (ku.has("ArrowDown")) {
-    const nvx = cos(r + hπ) * 2;
-    const nvy = sin(r + hπ) * 2;
+    const nvx = cos(r + hπ) * 2,
+      nvy = sin(r + hπ) * 2;
     d = hypot(vx + nvx, vy + nvy) > hypot(vx, vy) ? 1 : -1;
     vx += nvx;
     vy += nvy;
@@ -54,7 +81,9 @@ const step = (state: State, dt: number): void => {
   const h = hypot(vx, vy),
     nr = r + vr,
     nx = x + cos(nr + hπ * d) * h,
-    ny = y + sin(nr + hπ * d) * h;
+    ny = y + sin(nr + hπ * d) * h,
+    nrr = rr + vrr,
+    nlr = lr + vlr;
 
   p.innerText += [
     "\n",
@@ -76,6 +105,10 @@ const step = (state: State, dt: number): void => {
     px: x,
     py: y,
     pr: r,
+    rr: nrr,
+    lr: nlr,
+    prr: rr,
+    plr: lr,
   });
 };
 

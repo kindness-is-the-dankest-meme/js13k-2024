@@ -42,28 +42,24 @@ const oar = (() => {
   return p;
 })();
 
-const swing = 19 / 8;
-
 export const boat =
   (ctx: CanvasRenderingContext2D) =>
-  ({ t, x, y, r }: State) => {
+  ({ x, y, r, rr, lr }: State) => {
     ctx.fillStyle = "hsla(50, 10%, 90%, 0.6)";
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(r);
     ctx.fill(hull, "evenodd");
 
-    const a = sin(t / 400) * (π / swing);
-
     ctx.save();
     ctx.translate(32, 0);
-    ctx.rotate(a);
+    ctx.rotate(rr);
     ctx.fill(oar);
     ctx.restore();
 
     ctx.save();
     ctx.translate(-32, 0);
-    ctx.rotate(-a + π);
+    ctx.rotate(lr);
     ctx.fill(oar);
     ctx.restore();
 

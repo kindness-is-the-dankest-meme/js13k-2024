@@ -1,3 +1,4 @@
+import { π } from "./maths.ts";
 import { is } from "./platform.ts";
 
 type Position = {
@@ -14,15 +15,15 @@ type Size = {
   h: number;
 };
 
-type Sized<T extends string> = {
-  [D in keyof Size as `${T}${D}`]: Size[D];
+type Prefixed<T, P extends string> = {
+  [K in keyof T as `${P}${string & K}`]: T[K];
 };
+
+type Sized<T extends string> = Prefixed<Size, T>;
 
 type Transform = Position & Rotation;
 
-type Particle = Transform & {
-  [D in keyof Transform as `p${D}`]: Transform[D];
-};
+type Particle = Transform & Prefixed<Transform, "p">;
 
 type Angle = {
   a: Particle;
@@ -47,7 +48,13 @@ type Body = {
   cs: Constraint[];
 };
 
-export type State = { t: number } & Sized<"c"> & Sized<"w"> & Particle;
+export type State = { t: number } & Particle &
+  Prefixed<Rotation, "r"> &
+  Prefixed<Rotation, "l"> &
+  Prefixed<Rotation, "pr"> &
+  Prefixed<Rotation, "pl"> &
+  Sized<"c"> &
+  Sized<"w">;
 
 type ParState = State | Partial<State>;
 type SetState = ParState | ((prevState: State) => ParState);
@@ -64,6 +71,12 @@ export const { get, set } = (() => {
     px: 0,
     py: 0,
     pr: 0,
+    // oar rotation
+    rr: 0,
+    lr: π,
+    // previous oar rotation
+    prr: 0,
+    plr: π,
     // canvas size
     cw: 0,
     ch: 0,
