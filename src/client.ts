@@ -39,7 +39,7 @@ const createParticle = ({ x, y, r, px, py, pr }: ParticleConfig): Particle => ({
     py: py ?? y,
     pr: pr ?? r ?? 0,
   }),
-  stiffness = 0.99999;
+  stiffness = 0.9;
 
 const init = () => {
   /**
@@ -125,12 +125,25 @@ const step = (state: State, dt: number): void => {
 
   const { t, ps, cs } = state;
 
-  let fvy = ps["f"].y - ps["f"].py,
-    gvy = ps["g"].y - ps["g"].py;
+  let fvy = 0,
+    gvy = 0;
 
   if (kd.has("ArrowUp")) {
-    fvy -= 0.001;
-    gvy -= 0.001;
+    fvy = -1;
+    gvy = -1;
+  }
+
+  if (kd.has("ArrowRight")) {
+    fvy = -1;
+  }
+
+  if (kd.has("ArrowDown")) {
+    fvy = 1;
+    gvy = 1;
+  }
+
+  if (kd.has("ArrowLeft")) {
+    gvy = -1;
   }
 
   // let vx = (x - px) * friction,
@@ -220,10 +233,12 @@ const step = (state: State, dt: number): void => {
   //   `nlr: ${nlr}`,
   // ].join("\n");
 
+  // p.innerText = stringify(cs, null, 2);
+
   set({
     t: t + dt,
     ps: cs.reduce(
-      relaxDist(dt * 2),
+      relaxDist(dt),
       fromEntries(
         entries(ps).map(([k, v]) => {
           const vvx = v.x - v.px;
