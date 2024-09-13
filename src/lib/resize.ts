@@ -1,29 +1,37 @@
 import { on } from "./on.ts";
-import { dpr, win } from "./platform.ts";
+import { dpr, w } from "./platform.ts";
 import { set } from "./state.ts";
 
 export const resize = (c: HTMLElementTagNameMap["canvas"]): void => {
   const s = 1 / dpr;
 
-  on(win, "resize", () => {
-    const { innerWidth: hw, innerHeight: hh } = win;
+  on(w, "resize", () => {
+    const { innerWidth: ww, innerHeight: wh } = w,
+      cw = ww * dpr,
+      ch = wh * dpr,
+      hcw = cw / 2,
+      hch = ch / 2;
 
     set(({ x, y, px, py }) => ({
-      w: hw * dpr,
-      h: hh * dpr,
-      hw,
-      hh,
+      x: x || hcw,
+      y: y || hch,
+      px: px || hcw,
+      py: py || hch,
 
-      x: x || hw,
-      y: y || hh,
-      px: px || hw,
-      py: py || hh,
+      cw,
+      ch,
+
+      hcw,
+      hch,
+
+      ww,
+      wh,
     }));
 
-    c.width = hw * dpr;
-    c.height = hh * dpr;
+    c.width = cw;
+    c.height = ch;
     c.style.transform = `scale(${s})`;
   });
 
-  win.dispatchEvent(new Event("resize"));
+  w.dispatchEvent(new Event("resize"));
 };

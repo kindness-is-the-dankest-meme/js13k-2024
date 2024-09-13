@@ -1,20 +1,11 @@
-import { STATUS_TEXT, type StatusCode } from "jsr:@std/http";
 import { format, parse } from "jsr:@std/path";
 import { bundle } from "jsr:@deno/emit";
+import { httpStatus, res, url } from "./utils.ts";
 
-type Factory<T> = T extends new (...args: infer A) => infer R
-  ? (...args: A) => R
-  : never;
-
-const url: Factory<typeof URL> = (url, base) => new URL(url, base);
-const res: Factory<typeof Response> = (body, init) => new Response(body, init);
-
-const httpStatus = (code: StatusCode) => `${code} ${STATUS_TEXT[code]}`;
-
-const read = (path: URL) =>
+const readable = (path: URL) =>
   Deno.open(path, { read: true }).then(({ readable }) => readable);
 
-const bndl = (path: URL) => bundle(path).then(({ code }) => code);
+const compiled = (path: URL) => bundle(path).then(({ code }) => code);
 
 Deno.serve(async ({ url: href }: Request) => {
   const parsed = parse(decodeURIComponent(url(href).pathname));
@@ -55,7 +46,7 @@ Deno.serve(async ({ url: href }: Request) => {
 
   switch (ext) {
     case ".html": {
-      return res(await read(path), {
+      return res(await readable(path), {
         headers: {
           "Content-Type": "text/html",
         },
@@ -63,7 +54,7 @@ Deno.serve(async ({ url: href }: Request) => {
     }
 
     case ".ts": {
-      return res(await bndl(path), {
+      return res(await compiled(path), {
         headers: {
           "Content-Type": "text/javascript",
         },

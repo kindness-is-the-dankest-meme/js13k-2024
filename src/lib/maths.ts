@@ -19,6 +19,7 @@ type Val =
   | undefined;
 
 const isArr = (x: unknown): x is Arr => isArray(x);
+
 const lerpArr = (as: Arr, bs: Arr, t: number): Arr =>
   as.reduce<Arr>(
     (acc, a, i) => (canLerp(a, bs[i]) && acc.push(lerp(a, bs[i], t)), acc),
@@ -26,6 +27,7 @@ const lerpArr = (as: Arr, bs: Arr, t: number): Arr =>
   );
 
 const isNum = (x: unknown): x is Num => typeof x === "number";
+
 /**
  * prefer precise method
  * @see: https://github.com/mattdesl/lerp/blob/master/index.js
@@ -33,13 +35,21 @@ const isNum = (x: unknown): x is Num => typeof x === "number";
  */
 const lerpNum = (a: Num, b: Num, t: number): Num => (1 - t) * a + t * b;
 
+const specialKeys = ["s", "t", "w", "h"];
+
+const shouldLerp = (k: string) => !specialKeys.some((sk) => k.includes(sk));
+
 const isObj = (x: unknown): x is Obj =>
   x != null && !isArr(x) && typeof x === "object";
+
 const lerpObj = (a: Obj, b: Obj, t: number): Obj =>
   fromEntries(
     entries(a).reduce<[string, Val][]>(
       (acc, [k, v]) => (
-        canLerp(v, b[k]) && acc.push([k, lerp(v, b[k], t)]), acc
+        canLerp(v, b[k]) && shouldLerp(k)
+          ? acc.push([k, lerp(v, b[k], t)])
+          : acc.push([k, v]),
+        acc
       ),
       []
     )
@@ -47,6 +57,7 @@ const lerpObj = (a: Obj, b: Obj, t: number): Obj =>
 
 const canLerp = (a: unknown, b: unknown): boolean =>
   a != null && b != null && typeof a === typeof b;
+
 export const lerp = <T>(a: T, b: T, t: number): T => {
   switch (true) {
     case isArr(a) && isArr(b): {
