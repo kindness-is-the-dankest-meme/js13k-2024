@@ -61,7 +61,7 @@ export type State = { t: number; d: number } & Sys &
   Sized<"w">;
 
 type ParState = State | Partial<State>;
-type SetState = ParState | ((prevState: State) => ParState);
+export type SetState = ParState | ((prevState: State) => ParState);
 
 export const { get, set } = (() => {
   let state: State = {

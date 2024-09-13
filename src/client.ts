@@ -1,7 +1,15 @@
 import { boat } from "./lib/boat.ts";
+import { relaxDist } from "./lib/constraints/dist.ts";
 import { kd, ku } from "./lib/input.ts";
 import { atan2, cos, hypot, hπ, lerp, sin, sqrt, π, ππ } from "./lib/maths.ts";
-import { dup, entries, raf, stringify, values } from "./lib/platform.ts";
+import {
+  dup,
+  entries,
+  fromEntries,
+  raf,
+  stringify,
+  values,
+} from "./lib/platform.ts";
 import { resize } from "./lib/resize.ts";
 import {
   Distance,
@@ -31,7 +39,7 @@ const createParticle = ({ x, y, r, px, py, pr }: ParticleConfig): Particle => ({
     py: py ?? y,
     pr: pr ?? r ?? 0,
   }),
-  stiffness = 0.99;
+  stiffness = 0.99999;
 
 const init = () => {
   /**
@@ -106,7 +114,7 @@ const init = () => {
   set({ ps, cs });
 };
 
-const friction = 0.95,
+const friction = 0.9,
   swing = 19 / 8,
   force = 0.1;
 
@@ -115,110 +123,144 @@ const step = (state: State, dt: number): void => {
     .map(([k, v]) => `${k}: ${stringify(v)}`)
     .join("\n");
 
-  const { t, d, ps, cs, x, y, r, px, py, pr, rr, lr, prr, plr } = state,
-    nps = dup(ps);
+  const { t, ps, cs } = state;
 
-  let vx = (x - px) * friction,
-    vy = (y - py) * friction,
-    vr = ((r - pr) % ππ) * friction,
-    vrr = ((rr - prr) % ππ) * friction,
-    vlr = ((lr - plr) % ππ) * friction,
-    trr = rr,
-    tlr = lr,
-    nd = d;
+  let fvy = ps["f"].y - ps["f"].py,
+    gvy = ps["g"].y - ps["g"].py;
 
   if (kd.has("ArrowUp")) {
-    trr = -π / swing;
-    tlr = -trr + π;
+    fvy -= 0.001;
+    gvy -= 0.001;
   }
 
-  if (kd.has("ArrowRight")) {
-    tlr = hπ / swing + π;
-  }
+  // let vx = (x - px) * friction,
+  //   vy = (y - py) * friction,
+  //   vr = ((r - pr) % ππ) * friction,
+  //   vrr = ((rr - prr) % ππ) * friction,
+  //   vlr = ((lr - plr) % ππ) * friction,
+  //   trr = rr,
+  //   tlr = lr,
+  //   nd = d;
 
-  if (kd.has("ArrowDown")) {
-    trr = hπ / swing;
-    tlr = -trr + π;
-  }
+  // if (kd.has("ArrowUp")) {
+  //   trr = -π / swing;
+  //   tlr = -trr + π;
+  // }
 
-  if (kd.has("ArrowLeft")) {
-    trr = -hπ / swing;
-  }
+  // if (kd.has("ArrowRight")) {
+  //   tlr = hπ / swing + π;
+  // }
 
-  nps["f"].px = nps["f"].x;
-  nps["f"].py = nps["f"].y;
-  nps["f"].x = nps["b"].x + cos(trr) * cs[10].t;
-  nps["f"].y = nps["b"].y + sin(trr) * cs[10].t;
+  // if (kd.has("ArrowDown")) {
+  //   trr = hπ / swing;
+  //   tlr = -trr + π;
+  // }
 
-  nps["g"].px = nps["g"].x;
-  nps["g"].py = nps["g"].y;
-  nps["g"].x = nps["e"].x + cos(tlr) * cs[11].t;
-  nps["g"].y = nps["e"].y + sin(tlr) * cs[11].t;
+  // if (kd.has("ArrowLeft")) {
+  //   trr = -hπ / swing;
+  // }
 
-  vrr = (trr - rr) * force;
-  vlr = (tlr - lr) * force;
+  // nps["f"].px = nps["f"].x;
+  // nps["f"].py = nps["f"].y;
+  // nps["f"].x = nps["b"].x + cos(trr) * cs[10].t;
+  // nps["f"].y = nps["b"].y + sin(trr) * cs[10].t;
 
-  if (ku.delete("ArrowUp")) {
-    const nvx = cos(r - hπ) * 5,
-      nvy = sin(r - hπ) * 5;
-    nd = hypot(vx + nvx, vy + nvy) > hypot(vx, vy) ? -1 : 1;
-    vx += nvx;
-    vy += nvy;
-  }
+  // nps["g"].px = nps["g"].x;
+  // nps["g"].py = nps["g"].y;
+  // nps["g"].x = nps["e"].x + cos(tlr) * cs[11].t;
+  // nps["g"].y = nps["e"].y + sin(tlr) * cs[11].t;
 
-  if (ku.delete("ArrowRight")) {
-    vr += π / 180;
-  }
+  // vrr = (trr - rr) * force;
+  // vlr = (tlr - lr) * force;
 
-  if (ku.delete("ArrowDown")) {
-    const nvx = cos(r + hπ) * 2,
-      nvy = sin(r + hπ) * 2;
-    nd = hypot(vx + nvx, vy + nvy) > hypot(vx, vy) ? 1 : -1;
-    vx += nvx;
-    vy += nvy;
-  }
+  // if (ku.delete("ArrowUp")) {
+  //   const nvx = cos(r - hπ) * 5,
+  //     nvy = sin(r - hπ) * 5;
+  //   nd = hypot(vx + nvx, vy + nvy) > hypot(vx, vy) ? -1 : 1;
+  //   vx += nvx;
+  //   vy += nvy;
+  // }
 
-  if (ku.delete("ArrowLeft")) {
-    vr += -π / 180;
-  }
+  // if (ku.delete("ArrowRight")) {
+  //   vr += π / 180;
+  // }
 
-  const h = hypot(vx, vy),
-    nr = r + vr,
-    nx = x + cos(nr + hπ * d) * h,
-    ny = y + sin(nr + hπ * d) * h,
-    nrr = rr + vrr,
-    nlr = lr + vlr;
+  // if (ku.delete("ArrowDown")) {
+  //   const nvx = cos(r + hπ) * 2,
+  //     nvy = sin(r + hπ) * 2;
+  //   nd = hypot(vx + nvx, vy + nvy) > hypot(vx, vy) ? 1 : -1;
+  //   vx += nvx;
+  //   vy += nvy;
+  // }
 
-  p.innerText += [
-    "\n",
-    `vr: ${vr}`,
-    `vx: ${vx}`,
-    `vy: ${vy}`,
-    `vrr: ${vrr}`,
-    `vlr: ${vlr}`,
-    "",
-    `h: ${h}`,
-    `nr: ${nr}`,
-    `nx: ${nx}`,
-    `ny: ${ny}`,
-    `nrr: ${nrr}`,
-    `nlr: ${nlr}`,
-  ].join("\n");
+  // if (ku.delete("ArrowLeft")) {
+  //   vr += -π / 180;
+  // }
+
+  // const h = hypot(vx, vy),
+  //   nr = r + vr,
+  //   nx = x + cos(nr + hπ * d) * h,
+  //   ny = y + sin(nr + hπ * d) * h,
+  //   nrr = rr + vrr,
+  //   nlr = lr + vlr;
+
+  // p.innerText += [
+  //   "\n",
+  //   `vr: ${vr}`,
+  //   `vx: ${vx}`,
+  //   `vy: ${vy}`,
+  //   `vrr: ${vrr}`,
+  //   `vlr: ${vlr}`,
+  //   "",
+  //   `h: ${h}`,
+  //   `nr: ${nr}`,
+  //   `nx: ${nx}`,
+  //   `ny: ${ny}`,
+  //   `nrr: ${nrr}`,
+  //   `nlr: ${nlr}`,
+  // ].join("\n");
 
   set({
     t: t + dt,
-    d: nd,
-    ps: nps,
-    x: nx,
-    y: ny,
-    r: nr,
-    px: x,
-    py: y,
-    pr: r,
-    rr: nrr,
-    lr: nlr,
-    prr: rr,
-    plr: lr,
+    ps: cs.reduce(
+      relaxDist(dt * 2),
+      fromEntries(
+        entries(ps).map(([k, v]) => {
+          const vvx = v.x - v.px;
+          let vvy = v.y - v.py;
+
+          if (k === "f") {
+            vvy += fvy;
+          }
+
+          if (k === "g") {
+            vvy += gvy;
+          }
+
+          return [
+            k,
+            {
+              ...v,
+              x: v.x + vvx * friction,
+              y: v.y + vvy * friction,
+              px: v.x,
+              py: v.y,
+            },
+          ];
+        })
+      )
+    ),
+    // d: nd,
+    // x: nx,
+    // y: ny,
+    // r: nr,
+    // px: x,
+    // py: y,
+    // pr: r,
+    // rr: nrr,
+    // lr: nlr,
+    // prr: rr,
+    // plr: lr,
   });
 };
 
